@@ -1,0 +1,16 @@
+{
+  "name": "thailand-trip",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trip information hub for a group trip to Thailand — Hebrew RTL",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "test": "npm test --prefix server",
+    "postinstall": "npm install --prefix server && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
