@@ -1,0 +1,38 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-bgapp font-heebo text-slate-800;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-sm;
+}
+
+.btn-primary {
+  @apply bg-ocean hover:bg-ocean-dark text-white font-semibold rounded-app px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-success {
+  @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-app px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-ghost {
+  @apply bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-app px-4 py-2 transition-colors;
+}
+
+.input {
+  @apply w-full rounded-app border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/40 focus:border-ocean;
+}
+
+.label {
+  @apply block text-sm font-semibold text-slate-600 mb-1;
+}
+
+/* Leaflet RTL fix: keep map controls usable */
+.leaflet-container {
+  direction: ltr;
+}

@@ -1,0 +1,22 @@
+services:
+  # Single web service: Express serves /api plus the built React client.
+  - type: web
+    name: thailand-trip
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        value: https://chcmshsbhgxvmmpzsjau.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ORGANIZER_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENABLE_AI_CHAT
+        value: "false"

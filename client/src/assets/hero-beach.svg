@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bae6fd"/>
+      <stop offset="1" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.55" stop-color="#06b6d4"/>
+      <stop offset="1" stop-color="#0e9aa9"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#fcd34d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#sky)"/>
+  <circle cx="1020" cy="80" r="46" fill="#fef08a" opacity="0.95"/>
+
+  <!-- limestone karst islands -->
+  <path d="M140 210c10-60 40-95 75-100 30-5 55 25 60 55 5 28-8 45-30 45h-90c-12 0-17-10-15 0z" fill="#5eead4" opacity="0.7"/>
+  <path d="M885 195c8-48 34-80 66-84 28-4 50 22 54 48 5 26-7 40-27 40h-80c-10 0-15-8-13-4z" fill="#5eead4" opacity="0.55"/>
+
+  <!-- sea -->
+  <rect y="205" width="1200" height="150" fill="url(#sea)"/>
+  <g stroke="#ffffff" stroke-width="3" opacity="0.35" stroke-linecap="round">
+    <path d="M80 250h90M260 280h120M520 245h90M700 300h140M950 260h110M420 320h100M120 330h80"/>
+  </g>
+
+  <!-- longtail boat -->
+  <g transform="translate(560 215)">
+    <path d="M-90 45c20 18 160 18 180 0l30-25c-8 10-232 10-240 0z" fill="#92400e"/>
+    <path d="M-88 44c18 14 158 14 176 0" fill="none" stroke="#78350f" stroke-width="5" stroke-linecap="round"/>
+    <path d="M78 22l38-38" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-60 40v-52c0-6 8-6 8 0v52M20 40v-64c0-6 8-6 8 0v64" stroke="#78350f" stroke-width="5"/>
+    <path d="M-56-14c14-10 30-10 44 0M24-26c12-9 26-9 38 0" stroke="#e11d48" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- beach -->
+  <path d="M0 355c200-40 420-40 600-20s420 30 600 0v85H0z" fill="url(#sand)"/>
+
+  <!-- palm -->
+  <g transform="translate(150 330)">
+    <path d="M0 30C4 -10 10 -40 22 -62" stroke="#92400e" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <g fill="#059669">
+      <path d="M22-62C2-82-22-84-46-72c22 2 38 10 50 22z"/>
+      <path d="M22-62c-4-26 8-46 30-56-8 16-10 32-8 46z"/>
+      <path d="M22-62c24-14 46-12 64 4-20-2-36 2-50 10z"/>
+      <path d="M22-62c18 4 32 16 40 34-14-12-28-18-42-20z"/>
+    </g>
+    <circle cx="14" cy="-52" r="7" fill="#92400e"/>
+    <circle cx="28" cy="-48" r="7" fill="#92400e"/>
+  </g>
+</svg>
