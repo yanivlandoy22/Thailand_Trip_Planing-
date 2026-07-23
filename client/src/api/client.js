@@ -44,6 +44,7 @@ export const api = {
   deleteBooking: (id) => request(`/bookings/${id}`, { method: 'DELETE' }),
 
   parseText: (text) => request('/parse/text', { method: 'POST', body: { text } }),
+  backfillDates: () => request('/bookings/backfill-dates', { method: 'POST' }),
 
   uploadTicket: (id, file) => {
     const formData = new FormData();

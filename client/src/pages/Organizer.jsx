@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { useTripStore } from '../store/tripStore';
 import { useUiStore } from '../store/uiStore';
 import { PageTitle, StatusBadge } from '../components/Shared';
+import { toInputValue, fromInputValue } from '../utils/wallTime';
 
 const TYPES = [
   { value: 'flight', label: '✈️ טיסה' },
@@ -68,6 +69,26 @@ function BookingEditor({ draft, setDraft, onSave, onCancel, busy, saveLabel }) {
           onChange={(e) => setDraft({ ...draft, source: e.target.value })}
           placeholder="שם הספק / אתר ההזמנה"
         />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="label">תחילה (למסלול)</label>
+          <input
+            className="input"
+            type="datetime-local"
+            value={toInputValue(draft.start_at)}
+            onChange={(e) => setDraft({ ...draft, start_at: fromInputValue(e.target.value) })}
+          />
+        </div>
+        <div>
+          <label className="label">סיום</label>
+          <input
+            className="input"
+            type="datetime-local"
+            value={toInputValue(draft.end_at)}
+            onChange={(e) => setDraft({ ...draft, end_at: fromInputValue(e.target.value) })}
+          />
+        </div>
       </div>
       <div>
         <label className="label">שדות</label>
@@ -376,6 +397,36 @@ function TicketControls({ booking, onUpdated }) {
   );
 }
 
+// One-time helper for bookings created before the itinerary feature:
+// asks the server to extract start/end datetimes with Claude.
+function BackfillButton({ onDone }) {
+  const toast = useUiStore((s) => s.toast);
+  const [busy, setBusy] = useState(false);
+
+  const run = async () => {
+    setBusy(true);
+    try {
+      const { updated, failed, skipped } = await api.backfillDates();
+      if (updated === 0 && failed === 0) {
+        toast('לכל ההזמנות כבר יש תאריכים ✅', 'info');
+      } else {
+        toast(`זוהו תאריכים ל-${updated} הזמנות${failed ? `, ${failed} לא זוהו` : ''} (דולגו: ${skipped})`);
+      }
+      onDone();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button className="text-sm text-ocean font-semibold disabled:opacity-50" onClick={run} disabled={busy}>
+      {busy ? 'מזהה תאריכים...' : '🪄 נסה לזהות תאריכים'}
+    </button>
+  );
+}
+
 function SettingsSection() {
   const { settings, setSettings } = useTripStore();
   const toast = useUiStore((s) => s.toast);
@@ -509,6 +560,8 @@ export default function Organizer() {
       source: b.source,
       title: b.title,
       status: b.status,
+      start_at: b.start_at || null,
+      end_at: b.end_at || null,
       fields: [...(b.fields || [])],
       notes: b.notes,
     });
@@ -564,9 +617,12 @@ export default function Organizer() {
         <div className="card p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="font-bold">הזמנות ({bookings.length})</div>
-            <button className="text-sm text-ocean font-semibold" onClick={reload}>
-              🔄 רענון
-            </button>
+            <div className="flex items-center gap-3">
+              <BackfillButton onDone={reload} />
+              <button className="text-sm text-ocean font-semibold" onClick={reload}>
+                🔄 רענון
+              </button>
+            </div>
           </div>
           {bookings.length === 0 ? (
             <div className="text-sm text-slate-500 py-6 text-center">

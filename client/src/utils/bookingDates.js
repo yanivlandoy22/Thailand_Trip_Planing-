@@ -48,6 +48,25 @@ export function bookingDate(booking) {
   return null;
 }
 
+// Preferred sort: structured start_at first, heuristic field-date fallback.
+export function sortBookings(bookings) {
+  const key = (b) => {
+    if (b.start_at) {
+      const d = new Date(String(b.start_at).replace(/(Z|[+-]\d{2}:?\d{2})$/, '') + 'Z');
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+    return bookingDate(b);
+  };
+  return [...bookings].sort((a, b) => {
+    const da = key(a);
+    const db = key(b);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+}
+
 export function sortByDate(bookings) {
   return [...bookings].sort((a, b) => {
     const da = bookingDate(a);

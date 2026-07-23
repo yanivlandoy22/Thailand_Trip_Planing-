@@ -34,7 +34,7 @@ npm run dev          # client על :5173, server על :3001
 | `SUPABASE_SERVICE_ROLE_KEY` | מפתח סודי לשרת בלבד | Supabase Dashboard → Project Settings → API Keys → `service_role` |
 | `ORGANIZER_PASSWORD` | סיסמת אזור המארגן (ברירת מחדל `admin2026`) | בחרו בעצמכם |
 | `JWT_SECRET` | חתימת טוקן המארגן | מחרוזת אקראית ארוכה |
-| `ENABLE_AI_CHAT` | הפעלת צ'אט ה-AI (ברירת מחדל `false`) | ראו "הפעלת הצ'אט" |
+| `ENABLE_AI_CHAT` | צ'אט ה-AI פעיל כברירת מחדל; `false` מציג "בקרוב" | — |
 | `ANTHROPIC_MODEL` | אופציונלי. ברירת מחדל `claude-sonnet-5` | שנו רק אם Anthropic ימליצו על מודל חדש בעתיד |
 
 ## מסד הנתונים
@@ -56,13 +56,14 @@ npm run dev          # client על :5173, server על :3001
 2. **Client ב-Netlify/Vercel:** base directory `client`, build `npm run build`, publish `client/dist`
 3. ב-client הגדירו משתנה סביבה `VITE_API_URL=https://<your-render-app>.onrender.com/api`
 
-## הפעלת צ'אט ה-AI (בעתיד)
+## צ'אט ה-AI 🤖 — פעיל!
 
-הצ'אט בנוי ומחווט מקצה לקצה — כרגע במצב "בקרוב 🚀".
+הצ'אט חי כברירת מחדל: עונה בעברית מתוך נתוני הטיול, כולל המסלול יום-אחר-יום ("מה יש לנו מחר?").
+הגנות: מגבלת 15 הודעות לדקה למשתמש, והיסטוריה של עד 20 הודעות. לכיבוי זמני: `ENABLE_AI_CHAT=false`.
 
-1. הגדירו `ENABLE_AI_CHAT=true` ב-.env (או ב-Render)
-2. זהו. `/api/chat` יתחיל לקרוא ל-Claude עם כל נתוני הטיול (`server/services/tripContext.js`) + היסטוריית השיחה
-3. ה-client כבר מחובר — אין צורך בשינויי קוד
+## המסלול 🗓️
+
+דף הבית הוא ציר זמן כרונולוגי של כל הטיול — מקובץ לפי ימים, מלונות מופיעים גם בצ'ק-אין וגם בצ'ק-אאוט, ופריט "הבא בתור" מודגש במהלך הטיול. התאריכים המובנים (start_at/end_at) מחולצים אוטומטית בניתוח; להזמנות ותיקות לחצו "🪄 נסה לזהות תאריכים" באזור המארגן.
 
 ## אזור המארגן
 

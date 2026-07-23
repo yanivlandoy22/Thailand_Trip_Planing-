@@ -6,7 +6,13 @@ const SYSTEM_PROMPT = `אתה מנתח אישורי הזמנות (טיסות, מ
 חוקים מחייבים:
 1. פלט JSON בלבד — אובייקט אחד, ללא טקסט נוסף, ללא markdown, ללא \`\`\`.
 2. מבנה הפלט המדויק:
-{"type":"flight|hotel|activity|transfer|other","source":"שם הספק/האתר","title":"כותרת קצרה בעברית","status":"confirmed|pending|unknown","fields":[{"label":"תווית בעברית","value":"ערך"}],"notes":"הערות חשובות או null"}
+{"type":"flight|hotel|activity|transfer|other","source":"שם הספק/האתר","title":"כותרת קצרה בעברית","status":"confirmed|pending|unknown","start_at":"ISO 8601 או null","end_at":"ISO 8601 או null","fields":[{"label":"תווית בעברית","value":"ערך"}],"notes":"הערות חשובות או null"}
+2ב. start_at ו-end_at — תאריכי התחלה וסיום מובנים למיון כרונולוגי:
+   - פורמט ISO 8601 בשעה מקומית וללא אזור זמן (למשל "2026-08-10T21:30:00"). אם ידוע רק תאריך בלי שעה — "2026-08-10T00:00:00". אם לא ניתן לקבוע — null.
+   - flight: start_at = המראת ההלוך, end_at = נחיתת החזור (או נחיתת ההלוך אם אין חזור).
+   - hotel: start_at = צ'ק-אין, end_at = צ'ק-אאוט.
+   - activity: start_at = מועד הפעילות, end_at = סיום אם ידוע.
+   - transfer: start_at = שעת האיסוף.
 3. כל התוויות (label) והכותרת (title) בעברית. ערכים (value) יכולים להישאר בשפת המקור (שמות, קודי טיסה, שמות מלונות).
 4. חובה לכלול שמות נוסעים ומספרי מושבים אם קיימים (נחוצים בעלייה למטוס).
 5. אסור בהחלט לכלול: כתובות אימייל, מספרי טלפון, מספרי דרכון, פרטי תשלום/כרטיס אשראי.
@@ -38,10 +44,21 @@ function badParse() {
   return err;
 }
 
+// Accept ISO-8601-looking datetimes only; anything unparseable becomes null.
+function normalizeDatetime(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(value)) return null;
+  const date = new Date(value.endsWith('Z') ? value : `${value.replace(/([+-]\d{2}:?\d{2})$/, '')}Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  // Store wall time as-if-UTC: strip any offset, keep the literal components.
+  return value.replace(/(Z|[+-]\d{2}:?\d{2})$/, '');
+}
+
 function normalize(parsed) {
   const types = ['flight', 'hotel', 'activity', 'transfer', 'other'];
   const statuses = ['confirmed', 'pending', 'unknown'];
   return {
+    start_at: normalizeDatetime(parsed.start_at),
+    end_at: normalizeDatetime(parsed.end_at),
     type: types.includes(parsed.type) ? parsed.type : 'other',
     source: parsed.source || null,
     title: parsed.title || 'הזמנה ללא כותרת',
@@ -96,4 +113,31 @@ async function parseBookingPdfVision(pdfBuffer) {
   return normalize(extractJson(block.text));
 }
 
-module.exports = { parseBookingText, parseBookingPdfVision, extractJson, normalize, SYSTEM_PROMPT };
+// Backfill helper: extract only start_at/end_at from an existing booking's
+// display fields (for data created before the structured-datetime columns).
+async function extractBookingDates(booking) {
+  const fieldsText = (booking.fields || []).map((f) => `${f.label}: ${f.value}`).join('\n');
+  const response = await getClient().messages.create({
+    model: MODEL,
+    max_tokens: 256,
+    system:
+      'חלץ תאריכי התחלה וסיום מנתוני הזמנה. השב אך ורק ב-JSON: {"start_at":"ISO 8601 בשעה מקומית ללא אזור זמן או null","end_at":"כנ\'\'ל או null"}. ' +
+      'flight: התחלה=המראת הלוך, סיום=נחיתת חזור. hotel: צ\'ק-אין/צ\'ק-אאוט. תאריך בלי שעה → T00:00:00. אין מידע → null.',
+    messages: [
+      { role: 'user', content: `סוג: ${booking.type}\nכותרת: ${booking.title}\n${fieldsText}` },
+    ],
+  });
+  const block = response.content.find((b) => b.type === 'text');
+  if (!block) return { start_at: null, end_at: null };
+  const parsed = extractJson(block.text);
+  return { start_at: normalizeDatetime(parsed.start_at), end_at: normalizeDatetime(parsed.end_at) };
+}
+
+module.exports = {
+  parseBookingText,
+  parseBookingPdfVision,
+  extractBookingDates,
+  extractJson,
+  normalize,
+  SYSTEM_PROMPT,
+};

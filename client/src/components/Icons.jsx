@@ -70,6 +70,32 @@ export const BotIcon = (props) => (
   </svg>
 );
 
+export const CalendarIcon = (props) => (
+  <svg viewBox="0 0 24 24" {...base} {...props}>
+    <rect x="3" y="5" width="18" height="16" rx="3" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+    <path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01" />
+  </svg>
+);
+
+export const VanIcon = (props) => (
+  <svg viewBox="0 0 24 24" {...base} {...props}>
+    <path d="M2 8a2 2 0 0 1 2-2h10l5 5h1a2 2 0 0 1 2 2v3.5h-2.3M4.5 16.5H2V8" />
+    <path d="M14 6v5H2" />
+    <circle cx="7" cy="16.5" r="2" />
+    <circle cx="17" cy="16.5" r="2" />
+    <path d="M9 16.5h6" />
+  </svg>
+);
+
+export const DotsIcon = (props) => (
+  <svg viewBox="0 0 24 24" {...base} {...props}>
+    <circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 export const GearIcon = (props) => (
   <svg viewBox="0 0 24 24" {...base} {...props}>
     <circle cx="12" cy="12" r="3" />

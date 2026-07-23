@@ -81,6 +81,34 @@ router.delete('/:id', requireOrganizer, async (req, res, next) => {
   }
 });
 
+// One-time backfill: run bookings missing start_at through Claude to extract
+// structured datetimes (for data created before the itinerary change).
+router.post('/backfill-dates', requireOrganizer, async (req, res, next) => {
+  try {
+    const { extractBookingDates } = require('../services/parser');
+    const bookings = await queries.listBookings();
+    const missing = bookings.filter((b) => !b.start_at);
+    let updated = 0;
+    let failed = 0;
+    for (const booking of missing) {
+      try {
+        const { start_at, end_at } = await extractBookingDates(booking);
+        if (start_at) {
+          await queries.updateBooking(booking.id, { start_at, end_at });
+          updated += 1;
+        } else {
+          failed += 1;
+        }
+      } catch {
+        failed += 1;
+      }
+    }
+    res.json({ updated, failed, skipped: bookings.length - missing.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ---- Ticket PDF (original booking confirmation) ----
 
 // Attach or replace (organizer). Overwrites {id}.pdf in the private bucket.

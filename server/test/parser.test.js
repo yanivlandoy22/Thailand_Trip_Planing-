@@ -70,6 +70,75 @@ test('extractJson throws Hebrew 422 on garbage', () => {
   });
 });
 
+test('normalize validates start_at/end_at ISO datetimes', () => {
+  const { normalize: norm } = require('../services/parser');
+  const good = norm({ start_at: '2026-08-10T21:30:00', end_at: '2026-08-29T06:10:00+07:00', fields: [] });
+  assert.strictEqual(good.start_at, '2026-08-10T21:30:00');
+  // offsets stripped — wall time stored as-is
+  assert.strictEqual(good.end_at, '2026-08-29T06:10:00');
+  const bad = norm({ start_at: 'מחר בערב', end_at: 12345, fields: [] });
+  assert.strictEqual(bad.start_at, null);
+  assert.strictEqual(bad.end_at, null);
+});
+
+test('parser prompt requires structured start_at/end_at', () => {
+  const { SYSTEM_PROMPT: prompt } = require('../services/parser');
+  assert.match(prompt, /start_at/);
+  assert.match(prompt, /ISO 8601/);
+});
+
+test('backfill-dates fills missing datetimes via Claude', async () => {
+  const http = require('http');
+  const app = require('../index');
+  const { signOrganizerToken } = require('../middleware/auth');
+
+  setClientForTesting({
+    messages: {
+      create: async () => ({
+        content: [{ type: 'text', text: '{"start_at":"2026-08-16T08:00:00","end_at":null}' }],
+      }),
+    },
+  });
+
+  const server = app.listen(0);
+  const { port } = server.address();
+  const send = (method, path, body) =>
+    new Promise((resolve, reject) => {
+      const data = body ? JSON.stringify(body) : null;
+      const req = http.request(
+        {
+          host: '127.0.0.1', port, path, method,
+          headers: {
+            'content-type': 'application/json',
+            authorization: `Bearer ${signOrganizerToken()}`,
+          },
+        },
+        (res) => {
+          let raw = '';
+          res.on('data', (c) => (raw += c));
+          res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(raw || '{}') }));
+        }
+      );
+      req.on('error', reject);
+      req.end(data);
+    });
+
+  try {
+    const created = await send('POST', '/api/bookings', { title: 'ללא תאריך', type: 'activity' });
+    assert.strictEqual(created.body.start_at, null);
+
+    const backfill = await send('POST', '/api/bookings/backfill-dates');
+    assert.strictEqual(backfill.status, 200);
+    assert.ok(backfill.body.updated >= 1, JSON.stringify(backfill.body));
+
+    const list = await send('GET', '/api/bookings');
+    const updated = list.body.find((b) => b.id === created.body.id);
+    assert.strictEqual(updated.start_at, '2026-08-16T08:00:00');
+  } finally {
+    server.close();
+  }
+});
+
 test('normalize coerces bad type/status and drops malformed fields', () => {
   const result = normalize({
     type: 'spaceship',

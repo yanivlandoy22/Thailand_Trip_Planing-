@@ -26,6 +26,8 @@ async function createBooking(booking) {
     status: booking.status || 'unknown',
     fields: booking.fields || [],
     notes: booking.notes || null,
+    start_at: booking.start_at || null,
+    end_at: booking.end_at || null,
     ticket_path: null,
   };
   if (!supabase) {
@@ -40,7 +42,7 @@ async function createBooking(booking) {
 
 async function updateBooking(id, patch) {
   const allowed = {};
-  for (const key of ['type', 'source', 'title', 'status', 'fields', 'notes', 'ticket_path']) {
+  for (const key of ['type', 'source', 'title', 'status', 'fields', 'notes', 'start_at', 'end_at', 'ticket_path']) {
     if (patch[key] !== undefined) allowed[key] = patch[key];
   }
   if (!supabase) {
