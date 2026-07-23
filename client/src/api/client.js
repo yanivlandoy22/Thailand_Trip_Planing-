@@ -44,6 +44,16 @@ export const api = {
   deleteBooking: (id) => request(`/bookings/${id}`, { method: 'DELETE' }),
 
   parseText: (text) => request('/parse/text', { method: 'POST', body: { text } }),
+
+  uploadTicket: (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return request(`/bookings/${id}/ticket`, { method: 'POST', formData });
+  },
+  deleteTicket: (id) => request(`/bookings/${id}/ticket`, { method: 'DELETE' }),
+  // Always fetched fresh per click — signed URLs are short-lived, never cache.
+  getTicketUrl: (id, { download } = {}) =>
+    request(`/bookings/${id}/ticket-url${download ? '?download=1' : ''}`),
   parsePdf: (file) => {
     const formData = new FormData();
     formData.append('file', file);

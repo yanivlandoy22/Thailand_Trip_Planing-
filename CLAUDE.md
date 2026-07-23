@@ -38,12 +38,13 @@ purple #7c3aed, rose #e11d48, gray-800 #1e293b, radius 14px,
 bg #f0f4f8, cards white rounded-2xl shadow
 
 ## DB schema (Supabase / Postgres)
-bookings(id uuid pk default gen_random_uuid(), type text, source text, title text, status text, fields jsonb, notes text, created_at timestamptz default now())
+bookings(id uuid pk default gen_random_uuid(), type text, source text, title text, status text, fields jsonb, notes text, ticket_path text, created_at timestamptz default now())
 checklist(id uuid pk default gen_random_uuid(), label text, sub text, done boolean default false, created_at timestamptz default now())
 participants(id uuid pk default gen_random_uuid(), name text, created_at timestamptz default now())
 expenses(id uuid pk default gen_random_uuid(), description text, amount numeric, currency text, paid_by text, participants jsonb, date date, created_at timestamptz default now())
 settings(key text pk, value text)
 RLS: enabled on all tables with no public policies — access is exclusively through the backend using the service role key
+Storage: private bucket `tickets` (10MB, application/pdf only), object path {booking_id}.pdf; traveler access via server-generated 60-min signed URLs only — never expose the bucket publicly. Parse-PDF flow auto-attaches the uploaded file as the booking's ticket via pending_ticket_id (single upload).
 
 ## Data contract — booking fields
 {type: flight|hotel|activity|transfer|other, source, title(he), status: confirmed|pending|unknown,

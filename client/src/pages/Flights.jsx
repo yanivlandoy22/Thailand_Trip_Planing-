@@ -1,5 +1,6 @@
 import { useTripStore } from '../store/tripStore';
 import { Spinner, ErrorState, EmptyState, StatusBadge, FieldList, PageTitle } from '../components/Shared';
+import TicketStrip from '../components/TicketStrip';
 import { sortByDate, nextUpcoming } from '../utils/bookingDates';
 
 // The parser prefixes leg-specific fields with "הלוך:" / "חזור:".
@@ -63,6 +64,7 @@ function FlightCard({ booking, highlight }) {
           📝 {booking.notes}
         </p>
       )}
+      <TicketStrip booking={booking} />
     </article>
   );
 }

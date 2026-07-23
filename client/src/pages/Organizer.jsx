@@ -303,6 +303,79 @@ function ParseSection({ onParsed }) {
   );
 }
 
+// Attach / replace / remove the original ticket PDF for a booking row.
+function TicketControls({ booking, onUpdated }) {
+  const toast = useUiStore((s) => s.toast);
+  const confirm = useUiStore((s) => s.confirm);
+  const fileRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+
+  const pick = () => fileRef.current?.click();
+
+  const upload = async (file) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf') return toast('ניתן לצרף קבצי PDF בלבד', 'error');
+    if (file.size > 10 * 1024 * 1024) return toast('הקובץ גדול מדי — עד 10MB', 'error');
+    setBusy(true);
+    try {
+      const updated = await api.uploadTicket(booking.id, file);
+      onUpdated(updated);
+      toast('✅ הכרטיס צורף');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const remove = async () => {
+    const ok = await confirm('הסרת כרטיס', `להסיר את הכרטיס המצורף של "${booking.title}"?`);
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const updated = await api.deleteTicket(booking.id);
+      onUpdated(updated);
+      toast('הכרטיס הוסר');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => upload(e.target.files?.[0])}
+      />
+      {booking.ticket_path ? (
+        <>
+          <span className="text-sky-700 font-medium">🎫 כרטיס מצורף</span>
+          <button onClick={pick} disabled={busy} className="text-ocean font-semibold hover:underline">
+            {busy ? 'מעלה...' : 'החלף'}
+          </button>
+          <button onClick={remove} disabled={busy} className="text-rose-600 font-semibold hover:underline">
+            הסר
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={pick}
+          disabled={busy}
+          className="text-slate-500 font-semibold hover:text-ocean transition-colors"
+        >
+          {busy ? 'מעלה...' : '📎 צרף כרטיס'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function SettingsSection() {
   const { settings, setSettings } = useTripStore();
   const toast = useUiStore((s) => s.toast);
@@ -412,7 +485,13 @@ export default function Organizer() {
       } else {
         const created = await api.createBooking(draft);
         setBookings([...bookings, created]);
-        toast('ההזמנה נשמרה 🎉');
+        if (created.ticket_error) {
+          toast(created.ticket_error, 'error');
+        } else if (created.ticket_path) {
+          toast('ההזמנה נשמרה והכרטיס המקורי צורף 🎫');
+        } else {
+          toast('ההזמנה נשמרה 🎉');
+        }
       }
       setDraft(null);
       setEditingId(null);
@@ -496,21 +575,27 @@ export default function Organizer() {
           ) : (
             <ul className="space-y-2">
               {bookings.map((b) => (
-                <li key={b.id} className="border border-slate-100 rounded-app p-3 flex items-center gap-3">
-                  <span className="text-xl">
-                    {{ flight: '✈️', hotel: '🏨', activity: '🎡', transfer: '🚐' }[b.type] || '📄'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm truncate">{b.title}</div>
-                    <div className="text-xs text-slate-500">{b.source}</div>
+                <li key={b.id} className="border border-slate-100 rounded-app p-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">
+                      {{ flight: '✈️', hotel: '🏨', activity: '🎡', transfer: '🚐' }[b.type] || '📄'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm truncate">{b.title}</div>
+                      <div className="text-xs text-slate-500">{b.source}</div>
+                    </div>
+                    <StatusBadge status={b.status} />
+                    <button onClick={() => editBooking(b)} aria-label="עריכה" className="hover:scale-110 transition-transform">
+                      ✏️
+                    </button>
+                    <button onClick={() => deleteBooking(b)} aria-label="מחיקה" className="hover:scale-110 transition-transform">
+                      🗑️
+                    </button>
                   </div>
-                  <StatusBadge status={b.status} />
-                  <button onClick={() => editBooking(b)} aria-label="עריכה" className="hover:scale-110 transition-transform">
-                    ✏️
-                  </button>
-                  <button onClick={() => deleteBooking(b)} aria-label="מחיקה" className="hover:scale-110 transition-transform">
-                    🗑️
-                  </button>
+                  <TicketControls
+                    booking={b}
+                    onUpdated={(updated) => setBookings(bookings.map((x) => (x.id === updated.id ? updated : x)))}
+                  />
                 </li>
               ))}
             </ul>

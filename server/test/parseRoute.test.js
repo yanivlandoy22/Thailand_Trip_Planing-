@@ -121,6 +121,51 @@ test('image-only PDF (no text layer) falls back to Claude vision document block'
   }
 });
 
+test('parse-PDF result carries pending_ticket_id; saving the booking auto-attaches the file', async () => {
+  setClientForTesting({
+    messages: {
+      create: async () => ({ content: [{ type: 'text', text: JSON.stringify(PARSED) }] }),
+    },
+  });
+  const pdf = await makePdf(null);
+  const server = app.listen(0);
+  try {
+    const parsed = await uploadPdf(server, pdf, signOrganizerToken());
+    assert.strictEqual(parsed.status, 200);
+    assert.ok(parsed.body.pending_ticket_id, 'pending_ticket_id missing from parse result');
+
+    // Save the parsed booking with the pending id -> ticket attached, single upload
+    const { port } = server.address();
+    const saved = await new Promise((resolve, reject) => {
+      const data = JSON.stringify({ ...parsed.body, type: 'flight' });
+      const req = http.request(
+        {
+          host: '127.0.0.1',
+          port,
+          path: '/api/bookings',
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            authorization: `Bearer ${signOrganizerToken()}`,
+          },
+        },
+        (res) => {
+          let raw = '';
+          res.on('data', (c) => (raw += c));
+          res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(raw || '{}') }));
+        }
+      );
+      req.on('error', reject);
+      req.end(data);
+    });
+    assert.strictEqual(saved.status, 201, JSON.stringify(saved.body));
+    assert.strictEqual(saved.body.ticket_path, `${saved.body.id}.pdf`);
+    assert.strictEqual(saved.body.ticket_error, undefined);
+  } finally {
+    server.close();
+  }
+});
+
 test('parse endpoints are organizer-only', async () => {
   const server = app.listen(0);
   try {

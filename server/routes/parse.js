@@ -3,6 +3,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const { parseBookingText, parseBookingPdfVision } = require('../services/parser');
 const { requireOrganizer } = require('../middleware/auth');
+const { stashPending } = require('../services/ticketStore');
 
 const router = express.Router();
 
@@ -47,6 +48,10 @@ router.post('/pdf', requireOrganizer, upload.single('file'), async (req, res, ne
       text.length >= MIN_TEXT_LENGTH
         ? await parseBookingText(text)
         : await parseBookingPdfVision(req.file.buffer);
+
+    // Stash the original file so saving the parsed booking can attach it as
+    // the ticket without a second upload (claimed via pending_ticket_id).
+    result.pending_ticket_id = stashPending(req.file.buffer);
 
     res.json(result);
   } catch (err) {
