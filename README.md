@@ -35,7 +35,7 @@ npm run dev          # client על :5173, server על :3001
 | `ORGANIZER_PASSWORD` | סיסמת אזור המארגן (ברירת מחדל `admin2026`) | בחרו בעצמכם |
 | `JWT_SECRET` | חתימת טוקן המארגן | מחרוזת אקראית ארוכה |
 | `ENABLE_AI_CHAT` | הפעלת צ'אט ה-AI (ברירת מחדל `false`) | ראו "הפעלת הצ'אט" |
-| `ANTHROPIC_MODEL` | אופציונלי. ברירת מחדל `claude-sonnet-4-20250514` | אם המודל הוצא משירות — הגדירו `claude-sonnet-5` |
+| `ANTHROPIC_MODEL` | אופציונלי. ברירת מחדל `claude-sonnet-5` | שנו רק אם Anthropic ימליצו על מודל חדש בעתיד |
 
 ## מסד הנתונים
 

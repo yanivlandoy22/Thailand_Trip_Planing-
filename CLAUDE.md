@@ -16,7 +16,7 @@ NOT a booking site — bookings already exist; this displays them.
 - client/ — React SPA, Zustand state, React Router
 - server/ — Express API, Supabase (Postgres) via @supabase/supabase-js, Anthropic proxy
 - Supabase project: `thailand-trip` (dedicated, ref `chcmshsbhgxvmmpzsjau`); service role key server-side only
-- Anthropic model: claude-sonnet-4-20250514; key in ANTHROPIC_API_KEY env var only
+- Anthropic model: claude-sonnet-5 (overridable via ANTHROPIC_MODEL env var); key in ANTHROPIC_API_KEY env var only
 
 ## Non-negotiable product rules
 - NO external booking-link hub pages (no Skyscanner/Booking/Agoda collections)

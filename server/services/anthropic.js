@@ -1,8 +1,9 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
-// Model pinned by spec; overridable via env because claude-sonnet-4-20250514
-// is deprecated — if it gets retired set ANTHROPIC_MODEL=claude-sonnet-5.
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+// claude-sonnet-4-20250514 (the model originally pinned by spec) was retired
+// by Anthropic on 2026-06-15 and now 404s. Default to its recommended
+// replacement; override via ANTHROPIC_MODEL if needed.
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
 let client = null;
 
