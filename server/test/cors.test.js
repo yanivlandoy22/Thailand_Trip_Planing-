@@ -9,6 +9,9 @@ test('CORS allows same-origin, localhost, project Vercel URLs; rejects others', 
   assert.ok(isAllowedOrigin('http://localhost:5173', host));
   assert.ok(isAllowedOrigin('https://thailand-trip-planner.vercel.app', host));
   assert.ok(isAllowedOrigin('https://thailand-trip-planner-git-perf-vercel-frontend-me.vercel.app', host));
+  assert.ok(isAllowedOrigin('https://thailandtripplanner.vercel.app', host));
+  assert.ok(isAllowedOrigin('https://thailandtripplanner-dx86qhkp7-yanivlandoy22.vercel.app', host));
+  assert.ok(isAllowedOrigin('https://thailandtripplanner-git-perf-vercel-frontend-yanivlandoy22.vercel.app', host));
   assert.ok(!isAllowedOrigin('https://evil.example.com', host));
   assert.ok(!isAllowedOrigin('https://evil.vercel.app', host));
   assert.ok(!isAllowedOrigin('https://thailand-trip-planner.vercel.app.evil.com', host));

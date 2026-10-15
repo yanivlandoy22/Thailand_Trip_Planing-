@@ -2,7 +2,7 @@ const cors = require('cors');
 
 // Allowed browser origins for the API (split deploy: client on Vercel, API on Render).
 // Auth is bearer-token (no cookies), so this is defense-in-depth, not the auth layer.
-const VERCEL_ORIGIN = /^https:\/\/thailand-trip-plan(?:ner|ing)(?:-[a-z0-9-]+)?\.vercel\.app$/;
+const VERCEL_ORIGIN = /^https:\/\/thailand-?trip-?plan(?:ner|ing)(?:-[a-z0-9-]+)?\.vercel\.app$/;
 const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 function extraOrigins() {

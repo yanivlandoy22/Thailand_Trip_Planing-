@@ -16,7 +16,7 @@ NOT a booking site — bookings already exist; this displays them.
 - client/ — React SPA, Zustand state, React Router
 - server/ — Express API, Supabase (Postgres) via @supabase/supabase-js, Anthropic proxy
 - Deploy: API (+ optional built client) on Render free tier; client ALSO deployable as static site on Vercel (Root Directory `client`, `client/vercel.json` SPA rewrite) with `VITE_API_URL=https://<render-host>`. Vercel = Preview deployments only unless told otherwise
-- CORS (`server/middleware/corsPolicy.js`): same-origin, localhost, `thailand-trip-planner*.vercel.app`, plus optional `CORS_ORIGINS` env (comma list). Everything else gets no CORS headers
+- CORS (`server/middleware/corsPolicy.js`): same-origin, localhost, `thailandtripplanner*.vercel.app` (also hyphenated variants), plus optional `CORS_ORIGINS` env (comma list). Everything else gets no CORS headers
 - Cold start: Render free sleeps. Client warm-up ping on load (`GET /api/health`), GET requests auto-retry on network error/502/503/504 (never mutations/uploads), "השרת מתעורר" banner after 3s, skeleton loaders instead of spinners
 - Supabase project: `thailand-trip` (dedicated, ref `chcmshsbhgxvmmpzsjau`); service role key server-side only
 - Anthropic model: claude-sonnet-5 (overridable via ANTHROPIC_MODEL env var); key in ANTHROPIC_API_KEY env var only
