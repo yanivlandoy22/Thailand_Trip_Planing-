@@ -1,11 +1,12 @@
 import { useTripStore } from '../store/tripStore';
-import { Spinner, ErrorState, EmptyState, PageTitle } from '../components/Shared';
+import { ErrorState, EmptyState, PageTitle } from '../components/Shared';
+import Skeleton from '../components/Skeleton';
 import { HotelCard } from '../components/BookingCards';
 import { sortBookings } from '../utils/bookingDates';
 
 export default function Hotels() {
   const { bookings, loading, loaded, error, reload } = useTripStore();
-  if (loading && !loaded) return <Spinner />;
+  if (loading && !loaded) return <Skeleton variant="cards" />;
   if (error && !loaded) return <ErrorState message={error} onRetry={reload} />;
 
   const hotels = sortBookings(bookings.filter((b) => b.type === 'hotel'));

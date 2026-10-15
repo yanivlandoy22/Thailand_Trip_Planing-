@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useTripStore } from '../store/tripStore';
 import { useUiStore } from '../store/uiStore';
 import { api } from '../api/client';
-import { Spinner, ErrorState, PageTitle, EmptyState } from '../components/Shared';
+import { ErrorState, PageTitle, EmptyState } from '../components/Shared';
+import Skeleton from '../components/Skeleton';
 
 export default function Checklist() {
   const { checklist, setChecklist, loading, loaded, error, reload } = useTripStore();
@@ -11,7 +12,7 @@ export default function Checklist() {
   const [label, setLabel] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (loading && !loaded) return <Spinner />;
+  if (loading && !loaded) return <Skeleton variant="list" />;
   if (error && !loaded) return <ErrorState message={error} onRetry={reload} />;
 
   const toggle = async (item) => {

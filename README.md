@@ -79,3 +79,11 @@ npm run dev          # client על :5173, server על :3001
 - אפשר גם לצרף/להחליף/להסיר כרטיס ידנית מרשימת ההזמנות באזור המארגן (PDF עד 10MB)
 - מטיילים רואים בכרטיסי הטיסות פס "כרטיס טיסה מקורי" עם צפייה בטאב חדש או הורדה לנייד
 - האחסון ב-bucket פרטי ב-Supabase Storage; הגישה דרך קישורים חתומים לשעה בלבד שנוצרים בשרת — הקבצים לעולם לא חשופים ישירות
+
+## פיצול הפרונט ל-Vercel (תגובה מהירה, השרת נשאר ב-Render)
+
+1. ב-Vercel: Add New → Project → בחרו את הריפו, **Root Directory = `client`** (ה-`client/vercel.json` כולל SPA rewrite). הפרויקט נקרא `Thailand Trip Planner`.
+2. משתנה סביבה ב-Vercel: `VITE_API_URL=https://<כתובת-ה-Render-שלכם>` (בלי `/api` בסוף; מתווסף אוטומטית).
+3. השתמשו ב-**Preview** deployments (branch `perf/vercel-frontend`); אל תפרסמו ל-Production עד שבדקתם.
+4. **CORS**: השרת מאשר אוטומטית `thailand-trip-planner*.vercel.app` ו-localhost. אם ל-Vercel יש שם אחר, הוסיפו ב-Render משתנה אופציונלי `CORS_ORIGINS=https://<הדומיין>` (פסיקים להפרדה).
+5. Cold start של Render החינמי: האתר שולח ping ל-`/api/health` בטעינה, מנסה שוב אוטומטית בקריאות קריאה, ומציג "השרת מתעורר..." אחרי 3 שניות. הנתונים וה-PDF נשמרים ב-Supabase ולא בדיסק של Render.

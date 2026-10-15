@@ -2,10 +2,10 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const express = require('express');
-const cors = require('cors');
+const { corsPolicy } = require('./middleware/corsPolicy');
 
 const app = express();
-app.use(cors());
+app.use(corsPolicy);
 app.use(express.json({ limit: '2mb' }));
 
 app.use('/api/trip', require('./routes/trip'));
@@ -18,7 +18,8 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', require('./routes/chat'));
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+// Lightweight: no DB call. Used by Render's health check and the client warm-up ping.
+app.get('/api/health', (req, res) => res.json({ ok: true, uptime: Math.round(process.uptime()) }));
 
 // Production: serve the built client
 const clientDist = path.join(__dirname, '..', 'client', 'dist');

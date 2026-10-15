@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTripStore } from '../store/tripStore';
 import { useUiStore } from '../store/uiStore';
 import { api } from '../api/client';
-import { Spinner, ErrorState, PageTitle } from '../components/Shared';
+import { ErrorState, PageTitle } from '../components/Shared';
+import Skeleton from '../components/Skeleton';
 import {
   CURRENCIES,
   totalsPerCurrency,
@@ -48,7 +49,7 @@ export default function Expenses() {
   const settlement = computeSettlement(balances);
   const totalILS = expenses.reduce((sum, e) => sum + toILS(Number(e.amount) || 0, e.currency, rates), 0);
 
-  if (loading && !loaded) return <Spinner />;
+  if (loading && !loaded) return <Skeleton variant="list" />;
   if (error && !loaded) return <ErrorState message={error} onRetry={reload} />;
 
   const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }));

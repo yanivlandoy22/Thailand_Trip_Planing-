@@ -1,11 +1,20 @@
 // Thin fetch wrapper. In dev, Vite proxies /api to the Express server.
 // In production the server serves the client, so /api is same-origin.
 // VITE_API_URL overrides for split deployments (Netlify client + Render server).
-const BASE = import.meta.env.VITE_API_URL || '/api';
-
 import { useAuthStore } from '../store/authStore';
+import { useUiStore } from '../store/uiStore';
+import { withRetry, RetryableError, isRetryableStatus, resolveApiBase } from '../utils/retry';
 
-async function request(path, { method = 'GET', body, formData } = {}) {
+const BASE = resolveApiBase(import.meta.env.VITE_API_URL);
+const WAKING_AFTER_MS = 3000;
+
+// Fire-and-forget ping on app load so a sleeping Render server starts waking
+// before the first real request.
+export function warmUpServer() {
+  fetch(`${BASE}/health`).catch(() => {});
+}
+
+async function attempt(path, { method, body, formData }) {
   const headers = {};
   const token = useAuthStore.getState().token;
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -19,7 +28,7 @@ async function request(path, { method = 'GET', body, formData } = {}) {
       body: formData || (body ? JSON.stringify(body) : undefined),
     });
   } catch {
-    throw new Error('אין חיבור לשרת — בדקו את החיבור לאינטרנט');
+    throw new RetryableError('אין חיבור לשרת — בדקו את החיבור לאינטרנט');
   }
 
   let data = {};
@@ -30,10 +39,31 @@ async function request(path, { method = 'GET', body, formData } = {}) {
   }
 
   if (!res.ok) {
+    if (isRetryableStatus(res.status)) throw new RetryableError('השרת מתעורר — נסו שוב בעוד רגע');
     if (res.status === 401) useAuthStore.getState().handleUnauthorized();
     throw new Error(data.error || 'אירעה שגיאה — נסו שוב');
   }
   return data;
+}
+
+async function request(path, { method = 'GET', body, formData } = {}) {
+  // Show "server is waking up" if a request is still pending after 3s.
+  const { beginSlow, endSlow } = useUiStore.getState();
+  let slow = false;
+  const timer = setTimeout(() => {
+    slow = true;
+    beginSlow();
+  }, WAKING_AFTER_MS);
+
+  try {
+    // Only idempotent GETs are auto-retried — never mutations or uploads.
+    return await withRetry(() => attempt(path, { method, body, formData }), {
+      delays: method === 'GET' ? undefined : [],
+    });
+  } finally {
+    clearTimeout(timer);
+    if (slow) endSlow();
+  }
 }
 
 export const api = {

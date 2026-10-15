@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTripStore } from '../store/tripStore';
-import { Spinner, ErrorState, EmptyState, PageTitle, StatusBadge } from '../components/Shared';
+import { ErrorState, EmptyState, PageTitle, StatusBadge } from '../components/Shared';
+import Skeleton from '../components/Skeleton';
 import { bookingCardFor } from '../components/BookingCards';
 import { buildItinerary, findNextEntryId, nowAsWall, isDuringTrip } from '../utils/itinerary';
 import { formatTime, formatDayHeader } from '../utils/wallTime';
@@ -95,7 +96,7 @@ export default function Itinerary() {
     }, 300);
   }, [nextId, groups]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading && !loaded) return <Spinner />;
+  if (loading && !loaded) return <Skeleton variant="timeline" />;
   if (error && !loaded) return <ErrorState message={error} onRetry={reload} />;
 
   const toggle = (id) => setExpandedId((cur) => (cur === id ? null : id));

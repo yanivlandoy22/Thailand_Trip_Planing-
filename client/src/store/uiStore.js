@@ -12,6 +12,11 @@ export const useUiStore = create((set, get) => ({
     }, 3500);
   },
 
+  // "Server is waking up" banner: count of requests pending > 3s
+  slowRequests: 0,
+  beginSlow: () => set((s) => ({ slowRequests: s.slowRequests + 1 })),
+  endSlow: () => set((s) => ({ slowRequests: Math.max(0, s.slowRequests - 1) })),
+
   // Custom confirm modal (window.confirm is forbidden)
   confirmState: null,
   confirm: (title, message) =>

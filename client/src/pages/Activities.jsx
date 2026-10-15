@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { useTripStore } from '../store/tripStore';
-import { Spinner, ErrorState, EmptyState, PageTitle } from '../components/Shared';
+import { ErrorState, EmptyState, PageTitle } from '../components/Shared';
+import Skeleton from '../components/Skeleton';
 import { GenericCard } from '../components/BookingCards';
 import OperatorContact from '../components/OperatorContact';
 import { sortBookings, findField } from '../utils/bookingDates';
@@ -45,7 +46,7 @@ export default function Activities() {
     });
   }, [bookings, query]);
 
-  if (loading && !loaded) return <Spinner />;
+  if (loading && !loaded) return <Skeleton variant="cards" />;
   if (error && !loaded) return <ErrorState message={error} onRetry={reload} />;
 
   // Numbered pins: only located activities get a number (shared list<->map)

@@ -5,6 +5,8 @@ import TabBar from './components/TabBar';
 import Hero from './components/Hero';
 import ToastContainer from './components/Toast';
 import ConfirmModal from './components/ConfirmModal';
+import WakingBanner from './components/WakingBanner';
+import { warmUpServer } from './api/client';
 import { useTripStore } from './store/tripStore';
 
 import Itinerary from './pages/Itinerary';
@@ -23,6 +25,7 @@ export default function App() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    warmUpServer();
     load();
   }, [load]);
 
@@ -53,6 +56,7 @@ export default function App() {
       <TabBar />
       <ToastContainer />
       <ConfirmModal />
+      <WakingBanner />
     </div>
   );
 }
